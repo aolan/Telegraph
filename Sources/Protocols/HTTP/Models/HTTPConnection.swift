@@ -17,10 +17,15 @@ public protocol HTTPConnectionDelegate: AnyObject {
   func connection(_ httpConnection: HTTPConnection, handleUpgradeByRequest request: HTTPRequest)
 }
 
+public protocol TCPSocketForHTTPConnectionDelegate: AnyObject {
+  func connection(_ httpConnection: HTTPConnection, socketDidWrite socket: TCPSocket, tag: Int)
+}
+
 // MARK: HTTPConnection
 
 public class HTTPConnection: TCPConnection {
   public weak var delegate: HTTPConnectionDelegate?
+  public weak var tcpSocketForHTTPConnectionDelegate: TCPSocketForHTTPConnectionDelegate?
 
   private let socket: TCPSocket
   private let config: HTTPConfig
@@ -168,5 +173,7 @@ extension HTTPConnection: TCPSocketDelegate {
   }
 
   /// Raised when the socket sent data (ignore).
-  public func socketDidWrite(_ socket: TCPSocket, tag: Int) {}
+  public func socketDidWrite(_ socket: TCPSocket, tag: Int) {
+    tcpSocketForHTTPConnectionDelegate?.connection(self, socketDidWrite: socket, tag: tag)
+  }
 }
